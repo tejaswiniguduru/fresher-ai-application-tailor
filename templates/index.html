@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fresher AI Application Tailor</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background: #0f172a; color: #e2e8f0; padding: 24px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 26px; color: #f8fafc; }
+    .sub { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
+    input, textarea {
+      width: 100%; background: #0f172a; color: #f8fafc; border: 1px solid #475569;
+      border-radius: 8px; padding: 10px 12px; font-size: 14px;
+    }
+    textarea { min-height: 150px; resize: vertical; }
+    button {
+      background: #2563eb; color: white; border: none; border-radius: 8px;
+      padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; background: #334155; margin-left: 8px; }
+    .btn-sm:hover { background: #475569; }
+    .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .score-pill { background: #0f172a; border: 1px solid #334155; padding: 10px 16px; border-radius: 10px; font-size: 18px; font-weight: 700; color: #4ade80; }
+    ul { margin: 8px 0 0; padding-left: 20px; }
+    li { margin-bottom: 6px; line-height: 1.45; }
+    .change-item { background: #0f172a; border-left: 3px solid #38bdf8; padding: 10px 12px; border-radius: 6px; margin-bottom: 10px; }
+    .warn-item { background: #2a1810; border-left: 3px solid #f59e0b; padding: 10px 12px; border-radius: 6px; margin-bottom: 10px; }
+    .resume-box { background: #ffffff; color: #0f172a; padding: 24px; border-radius: 8px; line-height: 1.5; }
+    .resume-box h2 { margin: 0 0 4px; font-size: 22px; }
+    .resume-box h3 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; }
+    .copy-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; white-space: pre-wrap; font-size: 14px; }
+    .badge { font-size: 12px; color: #94a3b8; margin-left: 8px; font-weight: normal; }
+    #results { display: none; }
+    @media print {
+      body { background: white; color: black; padding: 0; }
+      .no-print { display: none !important; }
+      .resume-box { border: none; padding: 0; }
+      #results { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="no-print">
+      <h1>Fresher AI Application Tailor</h1>
+      <p class="sub">Tailor your fresher resume for a specific JD, inspect every edit honestly, and copy ready-to-send outreach.</p>
+
+      <div class="card">
+        <div style="margin-bottom: 14px;">
+          <label for="company">Target Company</label>
+          <input id="company" type="text" placeholder="e.g., Acme AI Labs" />
+        </div>
+        <div class="grid-2">
+          <div>
+            <div class="row-between" style="margin-bottom: 6px;">
+              <label for="resume" style="margin:0;">Your Base Resume (Auto-Saved Locally)</label>
+              <button class="btn-sm" type="button" onclick="clearSavedResume()">Clear Saved</button>
+            </div>
+            <textarea id="resume" placeholder="Paste your education, skills, training/internships, and projects..."></textarea>
+          </div>
+          <div>
+            <label for="jd">Job Description (Paste JD)</label>
+            <textarea id="jd" placeholder="Paste the target role and requirements..."></textarea>
+          </div>
+        </div>
+        <div style="margin-top: 16px;">
+          <button id="submitBtn" type="button">Tailor Application</button>
+          <span id="statusText" style="margin-left: 12px; color: #94a3b8; font-size: 13px;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="results">
+      <div class="card no-print">
+        <div class="row-between">
+          <div>
+            <div style="font-size: 13px; color: #94a3b8;">Estimated ATS Match</div>
+            <div id="atsScore" class="score-pill"></div>
+          </div>
+          <div>
+            <button class="btn-sm" type="button" onclick="copyResumeText(this)">Copy Resume Text</button>
+            <button class="btn-sm" type="button" onclick="window.print()">Print / Save as PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2 no-print">
+        <div class="card">
+          <h3 style="margin-top:0;">Mistakes Fixed</h3>
+          <ul id="mistakesList"></ul>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0;">Interview Warnings (Skill Gaps)</h3>
+          <div id="warningsBox"></div>
+        </div>
+      </div>
+
+      <div class="card no-print">
+        <h3 style="margin-top:0;">Exact Changes Made</h3>
+        <div id="changesBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="row-between no-print" style="margin-bottom: 10px;">
+          <h3 style="margin:0;">Tailored Resume Preview</h3>
+          <div>
+            <button class="btn-sm" type="button" onclick="copyResumeText(this)">Copy Resume</button>
+            <button class="btn-sm" type="button" onclick="window.print()">Save as PDF</button>
+          </div>
+        </div>
+        <div id="resumePreview" class="resume-box"></div>
+      </div>
+
+      <div class="grid-2 no-print">
+        <div class="card">
+          <div class="row-between" style="margin-bottom: 8px;">
+            <h3 style="margin:0;">Cold Email</h3>
+            <button class="btn-sm" type="button" onclick="copyText('emailFull', this)">Copy Email</button>
+          </div>
+          <div id="emailFull" class="copy-box"></div>
+        </div>
+        <div class="card">
+          <div class="row-between" style="margin-bottom: 8px;">
+            <h3 style="margin:0;">LinkedIn DM <span id="dmCount" class="badge"></span></h3>
+            <button class="btn-sm" type="button" onclick="copyText('dmBox', this)">Copy DM</button>
+          </div>
+          <div id="dmBox" class="copy-box"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let latestResumePlainText = "";
+    const STORAGE_KEY = "fresher_tailor_base_resume_v1";
+
+    const resumeEl = document.getElementById("resume");
+    const savedResume = localStorage.getItem(STORAGE_KEY);
+    if (savedResume) {
+      resumeEl.value = savedResume;
+    }
+    resumeEl.addEventListener("input", () => {
+      localStorage.setItem(STORAGE_KEY, resumeEl.value);
+    });
+
+    function clearSavedResume() {
+      localStorage.removeItem(STORAGE_KEY);
+      resumeEl.value = "";
+    }
+
+    document.getElementById("submitBtn").addEventListener("click", runTailor);
+
+    async function runTailor() {
+      const base_resume = resumeEl.value.trim();
+      const job_description = document.getElementById("jd").value.trim();
+      const target_company = document.getElementById("company").value.trim() || "Target Company";
+      const btn = document.getElementById("submitBtn");
+      const status = document.getElementById("statusText");
+
+      if (!base_resume || !job_description) {
+        alert("Please paste both your base resume and the job description.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Tailoring...";
+      status.textContent = "Calling AI model (this can take 10–20s)...";
+
+      try {
+        const res = await fetch("/api/tailor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ base_resume, job_description, target_company })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Request failed");
+        renderOutput(data);
+        status.textContent = "Done!";
+      } catch (err) {
+        console.error(err);
+        status.textContent = "Error: " + err.message;
+        alert("Could not tailor: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Tailor Application";
+      }
+    }
+
+    function renderOutput(d) {
+      document.getElementById("results").style.display = "block";
+      document.getElementById("atsScore").textContent = `${d.ats_match_before}% -> ${d.ats_match_after}%`;
+
+      document.getElementById("mistakesList").innerHTML =
+        d.mistakes_fixed.map(m => `<li>${escapeHtml(m)}</li>`).join("");
+
+      document.getElementById("warningsBox").innerHTML =
+        d.interview_warnings.map(w => `
+          <div class="warn-item">
+            <strong>${escapeHtml(w.missing_skill)}</strong>
+            <div style="margin-top:4px; font-size:13px;">${escapeHtml(w.honest_interview_tip)}</div>
+          </div>
+        `).join("");
+
+      document.getElementById("changesBox").innerHTML =
+        d.changes_made.map(c => `
+          <div class="change-item">
+            <strong>[${escapeHtml(c.section)}]</strong> ${escapeHtml(c.reason)}
+            <div style="font-size:13px; color:#94a3b8; margin-top:4px;">Before: ${escapeHtml(c.before)}</div>
+            <div style="font-size:13px; color:#e2e8f0; margin-top:2px;">After: ${escapeHtml(c.after)}</div>
+          </div>
+        `).join("");
+
+      const r = d.tailored_resume;
+      const certs = Array.isArray(r.certifications) ? r.certifications : [];
+      const certHtml = certs.length
+        ? `<h3>Certifications &amp; Achievements</h3><ul>${certs.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>`
+        : "";
+
+      document.getElementById("resumePreview").innerHTML = `
+        <h2>${escapeHtml(r.full_name)}</h2>
+        <div style="font-size:13px; color:#334155;">${escapeHtml(r.contact_line)}</div>
+        <h3>Summary</h3>
+        <div>${escapeHtml(r.professional_summary)}</div>
+        <h3>Technical Skills</h3>
+        <ul>${r.technical_skills.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>
+        <h3>Experience &amp; Training</h3>
+        <ul>${r.experience_or_training.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>
+        <h3>Projects</h3>
+        <ul>${r.projects.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>
+        <h3>Education</h3>
+        <ul>${r.education.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>
+        ${certHtml}
+      `;
+
+      const plainParts = [
+        r.full_name,
+        r.contact_line,
+        "\nSUMMARY\n" + r.professional_summary,
+        "\nTECHNICAL SKILLS\n" + r.technical_skills.map(s => "- " + s).join("\n"),
+        "\nEXPERIENCE & TRAINING\n" + r.experience_or_training.map(s => "- " + s).join("\n"),
+        "\nPROJECTS\n" + r.projects.map(s => "- " + s).join("\n"),
+        "\nEDUCATION\n" + r.education.map(s => "- " + s).join("\n")
+      ];
+      if (certs.length) {
+        plainParts.push("\nCERTIFICATIONS & ACHIEVEMENTS\n" + certs.map(s => "- " + s).join("\n"));
+      }
+      latestResumePlainText = plainParts.join("\n");
+
+      document.getElementById("emailFull").textContent =
+        `Subject: ${d.cold_email_subject}\n\n${d.cold_email_body}`;
+      document.getElementById("dmBox").textContent = d.linkedin_dm;
+      document.getElementById("dmCount").textContent = `(${d.linkedin_dm.length} / 280 chars)`;
+    }
+
+    function flashCopied(btn) {
+      if (!btn) return;
+      const orig = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    }
+
+    function copyText(elId, btn) {
+      const txt = document.getElementById(elId).textContent;
+      navigator.clipboard.writeText(txt).then(() => flashCopied(btn));
+    }
+
+    function copyResumeText(btn) {
+      navigator.clipboard.writeText(latestResumePlainText).then(() => flashCopied(btn));
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+  </script>
+</body>
+</html>
