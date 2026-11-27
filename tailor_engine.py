@@ -69,10 +69,11 @@ def _get_client() -> genai.Client:
     return genai.Client(api_key=api_key)
 
 
-def _select_model(client: genai.Client) -> str:
+def _get_candidate_models(client: genai.Client) -> list[str]:
     preferred = [
         "gemini-3.8-flash",
         "gemini-2.5-flash",
+        "gemini-2.5-flash-lite",
         "gemini-2.0-flash",
         "gemini-2.0-flash-lite",
     ]
@@ -84,15 +85,22 @@ def _select_model(client: genai.Client) -> str:
             actions = getattr(m, "supported_actions", None) or []
             if not actions or "generateContent" in actions:
                 available.add(short)
-        for candidate in preferred:
-            if candidate in available:
-                return candidate
+        ordered = [c for c in preferred if c in available]
         for short in sorted(available):
-            if "gemini" in short and "flash" in short and "embedding" not in short and "image" not in short and "audio" not in short:
-                return short
+            if (
+                short not in ordered
+                and "gemini" in short
+                and "flash" in short
+                and "embedding" not in short
+                and "image" not in short
+                and "audio" not in short
+            ):
+                ordered.append(short)
+        if ordered:
+            return ordered
     except Exception:
         pass
-    return "gemini-3.8-flash"
+    return preferred
 
 
 def tailor_application(base_resume: str, job_description: str, target_company: str = "Target Company") -> TailorOutput:
@@ -100,7 +108,7 @@ def tailor_application(base_resume: str, job_description: str, target_company: s
         raise ValueError("Both base_resume and job_description are required.")
 
     client = _get_client()
-    model = _select_model(client)
+    models_to_try = _get_candidate_models(client)
 
     prompt = f"""Target Company: {target_company}
 
@@ -112,24 +120,32 @@ JOB DESCRIPTION:
 
 Tailor the application honestly and return structured JSON."""
 
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_INSTRUCTION,
-                    response_mime_type="application/json",
-                    response_schema=TailorOutput,
-                    temperature=0.35,
-                ),
-            )
-            if not response.text:
-                raise RuntimeError("Model returned an empty response.")
-            return TailorOutput.model_validate_json(response.text)
-        except APIError as e:
-            if e.code in (429, 500, 503) and attempt < max_retries - 1:
-                time.sleep(1.5 * (attempt + 1))
-                continue
-            raise
+    last_error: Exception | None = None
+    for model in models_to_try:
+        for attempt in range(2):
+            try:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_INSTRUCTION,
+                        response_mime_type="application/json",
+                        response_schema=TailorOutput,
+                        temperature=0.35,
+                    ),
+                )
+                if not response.text:
+                    raise RuntimeError("Model returned an empty response.")
+                return TailorOutput.model_validate_json(response.text)
+            except APIError as e:
+                last_error = e
+                if e.code == 404:
+                    break
+                if e.code in (429, 500, 503):
+                    time.sleep(1.0)
+                    continue
+                raise
+
+    if last_error:
+        raise last_error
+    raise RuntimeError("All candidate Gemini models failed to respond.")
