@@ -71,6 +71,7 @@ def _get_client() -> genai.Client:
 
 def _select_model(client: genai.Client) -> str:
     preferred = [
+        "gemini-3.8-flash",
         "gemini-2.5-flash",
         "gemini-2.0-flash",
         "gemini-2.0-flash-lite",
@@ -91,7 +92,7 @@ def _select_model(client: genai.Client) -> str:
                 return short
     except Exception:
         pass
-    return "gemini-2.5-flash"
+    return "gemini-3.8-flash"
 
 
 def tailor_application(base_resume: str, job_description: str, target_company: str = "Target Company") -> TailorOutput:
