@@ -3,58 +3,279 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fresher AI Application Tailor</title>
+  <title>Fresher AI Application Tailor — Honest Resume & Outreach Copilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { margin: 0; background: #0f172a; color: #e2e8f0; padding: 24px; }
-    .container { max-width: 1100px; margin: 0 auto; }
-    h1 { margin: 0 0 6px; font-size: 26px; color: #f8fafc; }
-    .sub { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 16px; }
-    label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
-    input, textarea {
-      width: 100%; background: #0f172a; color: #f8fafc; border: 1px solid #475569;
-      border-radius: 8px; padding: 10px 12px; font-size: 14px;
+    :root {
+      --bg: #070b14;
+      --surface: #0f172a;
+      --surface-2: #162033;
+      --border: rgba(148, 163, 184, 0.16);
+      --border-focus: #3b82f6;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-2: #8b5cf6;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
     }
-    textarea { min-height: 150px; resize: vertical; }
-    button {
-      background: #2563eb; color: white; border: none; border-radius: 8px;
-      padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
-    }
-    button:hover { background: #1d4ed8; }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; background: #334155; margin-left: 8px; }
-    .btn-sm:hover { background: #475569; }
-    .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .score-pill { background: #0f172a; border: 1px solid #334155; padding: 10px 16px; border-radius: 10px; font-size: 18px; font-weight: 700; color: #4ade80; }
-    ul { margin: 8px 0 0; padding-left: 20px; }
-    li { margin-bottom: 6px; line-height: 1.45; }
-    .change-item { background: #0f172a; border-left: 3px solid #38bdf8; padding: 10px 12px; border-radius: 6px; margin-bottom: 10px; }
-    .warn-item { background: #2a1810; border-left: 3px solid #f59e0b; padding: 10px 12px; border-radius: 6px; margin-bottom: 10px; }
-    .resume-box { background: #ffffff; color: #0f172a; padding: 24px; border-radius: 8px; line-height: 1.5; }
-    .resume-box h2 { margin: 0 0 4px; font-size: 22px; }
-    .resume-box h3 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; }
-    .copy-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; white-space: pre-wrap; font-size: 14px; }
-    .badge { font-size: 12px; color: #94a3b8; margin-left: 8px; font-weight: normal; }
-    #results { display: none; }
 
+    * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse 80% 45% at 50% -10%, rgba(59, 130, 246, 0.22), transparent),
+        radial-gradient(ellipse 50% 35% at 85% 10%, rgba(139, 92, 246, 0.14), transparent),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 20px 64px;
+    }
+
+    .container { max-width: 1140px; margin: 0 auto; }
+
+    /* Hero Header */
+    .hero { text-align: center; max-width: 720px; margin: 0 auto 32px; }
+    .pill-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: #93c5fd;
+      padding: 6px 14px; border-radius: 999px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+      margin-bottom: 14px;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sub { color: var(--muted); margin: 0; font-size: 15px; line-height: 1.6; }
+
+    /* Cards & Layout */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 840px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.72), rgba(15, 23, 42, 0.88));
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+    }
+
+    .section-title {
+      display: flex; align-items: center; gap: 8px;
+      margin: 0; font-size: 15px; font-weight: 700; color: #f8fafc;
+    }
+
+    label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 7px; }
+    input, textarea {
+      width: 100%;
+      background: rgba(7, 11, 20, 0.75);
+      color: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    }
+    textarea { min-height: 185px; resize: vertical; }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: white; border: none; border-radius: 10px;
+      padding: 13px 24px; font-size: 14px; font-weight: 600;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(37, 99, 235, 0.48);
+    }
+    .btn-primary:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .btn-sm {
+      background: rgba(51, 65, 85, 0.65);
+      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-sm:hover { background: rgba(71, 85, 105, 0.85); border-color: rgba(148, 163, 184, 0.4); }
+    .btn-accent-sm {
+      background: rgba(37, 99, 235, 0.2);
+      border-color: rgba(59, 130, 246, 0.45);
+      color: #93c5fd;
+    }
+    .btn-accent-sm:hover { background: rgba(37, 99, 235, 0.35); }
+
+    .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ATS Score Banner */
+    .ats-banner {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(59, 130, 246, 0.12));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .score-display { display: flex; align-items: baseline; gap: 12px; margin-top: 4px; }
+    .score-before { font-size: 20px; font-weight: 700; color: #94a3b8; }
+    .score-arrow { color: #64748b; font-size: 18px; }
+    .score-after { font-size: 30px; font-weight: 800; color: #34d399; }
+    .boost-pill {
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      font-size: 12px; font-weight: 700;
+      padding: 3px 10px; border-radius: 999px;
+    }
+    .progress-track {
+      width: 100%; max-width: 340px; height: 8px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px; overflow: hidden; margin-top: 10px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+
+    /* Lists & Diff Cards */
+    ul.clean-list { margin: 12px 0 0; padding-left: 18px; }
+    ul.clean-list li { margin-bottom: 8px; line-height: 1.5; font-size: 14px; color: #cbd5e1; }
+
+    .warn-item {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-left: 3px solid var(--amber);
+      padding: 12px 14px; border-radius: 10px; margin-top: 10px;
+    }
+    .warn-item strong { color: #fbbf24; font-size: 14px; }
+
+    .change-item {
+      background: rgba(7, 11, 20, 0.6);
+      border: 1px solid var(--border);
+      padding: 14px; border-radius: 12px; margin-top: 12px;
+    }
+    .section-chip {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.18);
+      color: #93c5fd;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      padding: 2px 8px; border-radius: 6px; margin-right: 8px;
+    }
+    .diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    @media (max-width: 720px) { .diff-grid { grid-template-columns: 1fr; } }
+    .diff-before {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.22);
+      border-radius: 8px; padding: 10px; font-size: 13px; color: #fca5a5;
+    }
+    .diff-after {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.22);
+      border-radius: 8px; padding: 10px; font-size: 13px; color: #a7f3d0;
+    }
+
+    /* Executive White Resume Paper */
+    .resume-wrapper {
+      background: #090d16;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .resume-box {
+      background: #ffffff;
+      color: #0f172a;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 36px 42px;
+      border-radius: 6px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      line-height: 1.5;
+    }
+    .resume-box h2 { margin: 0 0 4px; font-size: 23px; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; }
+    .resume-box .contact { font-size: 13px; color: #475569; margin-bottom: 10px; }
+    .resume-box h3 {
+      margin: 15px 0 7px;
+      font-size: 12px; font-weight: 700; color: #1e3a8a;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      border-bottom: 1.5px solid #cbd5e1; padding-bottom: 3px;
+    }
+    .resume-box p, .resume-box li { font-size: 13.5px; color: #1e293b; }
+    .resume-box ul { margin: 6px 0 0; padding-left: 18px; }
+    .resume-box li { margin-bottom: 4px; }
+
+    /* Outreach Boxes */
+    .copy-box {
+      background: rgba(7, 11, 20, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      white-space: pre-wrap;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #e2e8f0;
+    }
+    .badge { font-size: 12px; color: #94a3b8; font-weight: 500; margin-left: 6px; }
+    #results { display: none; animation: fadeIn 0.35s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .footer-note { text-align: center; color: #64748b; font-size: 12px; margin-top: 28px; }
+
+    /* Clean PDF Print Mode */
     @page {
       size: auto;
       margin: 0;
     }
     @media print {
-      body { background: white; color: black; padding: 0; margin: 0; }
+      body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
       .no-print { display: none !important; }
-      .container { max-width: 100%; margin: 0; padding: 0; }
-      .card { border: none; background: transparent; padding: 0; margin: 0; box-shadow: none; }
+      .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .card, .resume-wrapper { border: none !important; background: transparent !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; }
       .resume-box {
-        border: none;
-        border-radius: 0;
-        padding: 16mm 18mm;
-        margin: 0;
-        width: 100%;
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 16mm 18mm !important;
+        margin: 0 !important;
+        width: 100% !important;
       }
       #results { display: block !important; }
     }
@@ -63,91 +284,111 @@
 <body>
   <div class="container">
     <div class="no-print">
-      <h1>Fresher AI Application Tailor</h1>
-      <p class="sub">Tailor your fresher resume for a specific JD, inspect every edit honestly, and copy ready-to-send outreach.</p>
+      <div class="hero">
+        <div class="pill-tag"><span class="dot"></span> Zero-Fabrication AI Resume &amp; Outreach Copilot</div>
+        <h1>Fresher AI Application Tailor</h1>
+        <p class="sub">Align your resume to any Job Description in seconds, inspect every edit honestly, spot interview skill gaps early, and copy recruiter-ready outreach.</p>
+      </div>
 
       <div class="card">
-        <div style="margin-bottom: 14px;">
-          <label for="company">Target Company</label>
-          <input id="company" type="text" placeholder="e.g., Acme AI Labs" />
+        <div class="row-between" style="margin-bottom: 16px;">
+          <h2 class="section-title">01. Application Inputs</h2>
+          <div class="btn-group">
+            <button class="btn-sm btn-accent-sm" type="button" onclick="loadSampleDemo()">Try Sample Demo</button>
+            <button class="btn-sm" type="button" onclick="clearSavedResume()">Clear Resume</button>
+          </div>
         </div>
+
+        <div style="margin-bottom: 16px;">
+          <label for="company">Target Company</label>
+          <input id="company" type="text" placeholder="e.g., Apple, Razorpay, Zomato, Acme AI Labs" />
+        </div>
+
         <div class="grid-2">
           <div>
-            <div class="row-between" style="margin-bottom: 6px;">
-              <label for="resume" style="margin:0;">Your Base Resume (Auto-Saved Locally)</label>
-              <button class="btn-sm" type="button" onclick="clearSavedResume()">Clear Saved</button>
-            </div>
-            <textarea id="resume" placeholder="Paste your education, skills, training/internships, and projects..."></textarea>
+            <label for="resume">Your Base Resume <span class="badge">(Auto-saved in browser)</span></label>
+            <textarea id="resume" placeholder="Paste your summary, skills, internships/training, projects, education, and certifications..."></textarea>
           </div>
           <div>
-            <label for="jd">Job Description (Paste JD)</label>
-            <textarea id="jd" placeholder="Paste the target role and requirements..."></textarea>
+            <label for="jd">Target Job Description</label>
+            <textarea id="jd" placeholder="Paste the role summary, responsibilities, and required qualifications..."></textarea>
           </div>
         </div>
-        <div style="margin-top: 16px;">
-          <button id="submitBtn" type="button">Tailor Application</button>
-          <span id="statusText" style="margin-left: 12px; color: #94a3b8; font-size: 13px;"></span>
+
+        <div class="row-between" style="margin-top: 18px;">
+          <button id="submitBtn" class="btn-primary" type="button">
+            <span class="spinner"></span>
+            <span id="btnLabel">Tailor Application Now</span>
+          </button>
+          <span id="statusText" style="color: #94a3b8; font-size: 13px;"></span>
         </div>
       </div>
     </div>
 
     <div id="results">
-      <div class="card no-print">
+      <div class="card ats-banner no-print">
         <div class="row-between">
           <div>
-            <div style="font-size: 13px; color: #94a3b8;">Estimated ATS Match</div>
-            <div id="atsScore" class="score-pill"></div>
+            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6ee7b7;">Estimated ATS Match Score</div>
+            <div id="atsScore" class="score-display"></div>
+            <div class="progress-track"><div id="atsBar" class="progress-fill" style="width: 0%;"></div></div>
           </div>
-          <div>
-            <button class="btn-sm" type="button" onclick="copyResumeText(this)">Copy Resume Text</button>
-            <button class="btn-sm" type="button" onclick="downloadResumePdf()">Print / Save as PDF</button>
+          <div class="btn-group">
+            <button class="btn-sm" type="button" onclick="copyResumeText(this)">Copy Plain Text</button>
+            <button class="btn-primary" style="padding: 10px 16px; font-size: 13px;" type="button" onclick="downloadResumePdf()">Download Clean PDF</button>
           </div>
         </div>
       </div>
 
       <div class="grid-2 no-print">
         <div class="card">
-          <h3 style="margin-top:0;">Mistakes Fixed</h3>
-          <ul id="mistakesList"></ul>
+          <h3 class="section-title">Key Weaknesses Fixed</h3>
+          <ul id="mistakesList" class="clean-list"></ul>
         </div>
         <div class="card">
-          <h3 style="margin-top:0;">Interview Warnings (Skill Gaps)</h3>
+          <h3 class="section-title">Interview Warnings (Prepare These)</h3>
           <div id="warningsBox"></div>
         </div>
       </div>
 
       <div class="card no-print">
-        <h3 style="margin-top:0;">Exact Changes Made</h3>
+        <h3 class="section-title">Transparent Edit Log (Before vs. After)</h3>
         <div id="changesBox"></div>
       </div>
 
       <div class="card">
-        <div class="row-between no-print" style="margin-bottom: 10px;">
-          <h3 style="margin:0;">Tailored Resume Preview</h3>
-          <div>
+        <div class="row-between no-print" style="margin-bottom: 14px;">
+          <h3 class="section-title">02. Tailored Resume Preview</h3>
+          <div class="btn-group">
             <button class="btn-sm" type="button" onclick="copyResumeText(this)">Copy Resume</button>
-            <button class="btn-sm" type="button" onclick="downloadResumePdf()">Save as PDF</button>
+            <button class="btn-sm btn-accent-sm" type="button" onclick="downloadResumePdf()">Save as PDF</button>
           </div>
         </div>
-        <div id="resumePreview" class="resume-box"></div>
+        <div class="resume-wrapper">
+          <div id="resumePreview" class="resume-box"></div>
+        </div>
       </div>
 
       <div class="grid-2 no-print">
         <div class="card">
-          <div class="row-between" style="margin-bottom: 8px;">
-            <h3 style="margin:0;">Cold Email</h3>
+          <div class="row-between" style="margin-bottom: 10px;">
+            <h3 class="section-title">03. Recruiter Cold Email</h3>
             <button class="btn-sm" type="button" onclick="copyText('emailFull', this)">Copy Email</button>
           </div>
           <div id="emailFull" class="copy-box"></div>
         </div>
         <div class="card">
-          <div class="row-between" style="margin-bottom: 8px;">
-            <h3 style="margin:0;">LinkedIn DM <span id="dmCount" class="badge"></span></h3>
+          <div class="row-between" style="margin-bottom: 10px;">
+            <h3 class="section-title">04. LinkedIn Connection DM <span id="dmCount" class="badge"></span></h3>
             <button class="btn-sm" type="button" onclick="copyText('dmBox', this)">Copy DM</button>
           </div>
           <div id="dmBox" class="copy-box"></div>
         </div>
       </div>
+    </div>
+
+    <div class="footer-note no-print">
+      Built with FastAPI, Pydantic &amp; Gemini API • Honest AI Tailoring for Freshers
     </div>
   </div>
 
@@ -170,6 +411,46 @@
       resumeEl.value = "";
     }
 
+    function loadSampleDemo() {
+      document.getElementById("company").value = "Acme AI Labs";
+      if (!resumeEl.value.trim()) {
+        resumeEl.value = `TEJASWINI GUDURU
+Telangana, India | tejaswiniguduru23@gmail.com | +91 8801011911 | linkedin.com/in/tejaswini-guduru
+
+PROFESSIONAL SUMMARY
+Computer Science (AI & ML) graduate with hands-on experience in Python, Machine Learning, NLP, LLMs, and Retrieval-Augmented Generation (RAG).
+
+SKILLS
+Programming: Python (NumPy, Pandas, Scikit-learn), SQL, REST APIs, FastAPI
+GenAI & NLP: LangChain, ChromaDB, Sentence Transformers, Hugging Face, RAG, Prompt Engineering
+Tools: Docker, Git, n8n, Power BI
+
+EXPERIENCE
+Software Engineer — Cloud Shift AI Solutions (April 2026 – Present)
+Develop and maintain Python-based software and data-driven AI applications to support business workflows.
+
+Automation Test Engineer — Capgemini (December 2025 – March 2026)
+Developed automated test scripts using Playwright with JavaScript/TypeScript to validate end-to-end web workflows.
+
+PROJECTS
+Enterprise RAG Knowledge Assistant: Built an end-to-end RAG pipeline using LangChain, ChromaDB, Sentence Transformers, and FastAPI.
+AI-Powered Email Classification & Automation Agent: Built an automated routing pipeline using n8n and Gmail API, reducing inbox noise by 90%.
+
+EDUCATION
+B.Tech in Computer Science (AI & ML) — Sumathi Reddy Institute of Technology for Women | July 2025 | CGPA: 8.0/10
+
+CERTIFICATIONS
+Machine Learning Specialization — DeepLearning.AI
+Generative AI with LLMs — DeepLearning.AI & AWS`;
+      }
+      document.getElementById("jd").value = `Role: Junior GenAI & Python Engineer
+Requirements:
+- Strong Python programming and FastAPI/REST API integration skills
+- Hands-on experience building RAG pipelines, embeddings, vector databases, and semantic search
+- Experience building AI agents or automated workflows using LangChain or similar frameworks
+- Familiarity with Docker, Git, and cloud platforms (AWS/GCP)`;
+    }
+
     function downloadResumePdf() {
       const originalTitle = document.title;
       document.title = candidateNameForFile;
@@ -184,6 +465,7 @@
       const job_description = document.getElementById("jd").value.trim();
       const target_company = document.getElementById("company").value.trim() || "Target Company";
       const btn = document.getElementById("submitBtn");
+      const btnLabel = document.getElementById("btnLabel");
       const status = document.getElementById("statusText");
 
       if (!base_resume || !job_description) {
@@ -192,8 +474,9 @@
       }
 
       btn.disabled = true;
-      btn.textContent = "Tailoring...";
-      status.textContent = "Calling AI model (this can take 10–20s)...";
+      btn.classList.add("loading");
+      btnLabel.textContent = "Tailoring Application...";
+      status.textContent = "Analyzing JD keywords and rewriting bullets (10–20s)...";
 
       try {
         const res = await fetch("/api/tailor", {
@@ -204,20 +487,30 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Request failed");
         renderOutput(data);
-        status.textContent = "Done!";
+        status.textContent = "Tailored successfully!";
+        document.getElementById("results").scrollIntoView({ behavior: "smooth" });
       } catch (err) {
         console.error(err);
         status.textContent = "Error: " + err.message;
         alert("Could not tailor: " + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = "Tailor Application";
+        btn.classList.remove("loading");
+        btnLabel.textContent = "Tailor Application Now";
       }
     }
 
     function renderOutput(d) {
       document.getElementById("results").style.display = "block";
-      document.getElementById("atsScore").textContent = `${d.ats_match_before}% -> ${d.ats_match_after}%`;
+      const diff = d.ats_match_after - d.ats_match_before;
+      const boostHtml = diff > 0 ? `<span class="boost-pill">+${diff}% Match Boost</span>` : "";
+      document.getElementById("atsScore").innerHTML = `
+        <span class="score-before">${d.ats_match_before}%</span>
+        <span class="score-arrow">→</span>
+        <span class="score-after">${d.ats_match_after}%</span>
+        ${boostHtml}
+      `;
+      document.getElementById("atsBar").style.width = `${Math.min(100, Math.max(0, d.ats_match_after))}%`;
 
       document.getElementById("mistakesList").innerHTML =
         d.mistakes_fixed.map(m => `<li>${escapeHtml(m)}</li>`).join("");
@@ -226,16 +519,18 @@
         d.interview_warnings.map(w => `
           <div class="warn-item">
             <strong>${escapeHtml(w.missing_skill)}</strong>
-            <div style="margin-top:4px; font-size:13px;">${escapeHtml(w.honest_interview_tip)}</div>
+            <div style="margin-top:4px; font-size:13px; color:#fde68a;">${escapeHtml(w.honest_interview_tip)}</div>
           </div>
         `).join("");
 
       document.getElementById("changesBox").innerHTML =
         d.changes_made.map(c => `
           <div class="change-item">
-            <strong>[${escapeHtml(c.section)}]</strong> ${escapeHtml(c.reason)}
-            <div style="font-size:13px; color:#94a3b8; margin-top:4px;">Before: ${escapeHtml(c.before)}</div>
-            <div style="font-size:13px; color:#e2e8f0; margin-top:2px;">After: ${escapeHtml(c.after)}</div>
+            <div><span class="section-chip">${escapeHtml(c.section)}</span><strong style="font-size:13.5px;">${escapeHtml(c.reason)}</strong></div>
+            <div class="diff-grid">
+              <div class="diff-before"><strong>Before:</strong> ${escapeHtml(c.before)}</div>
+              <div class="diff-after"><strong>After:</strong> ${escapeHtml(c.after)}</div>
+            </div>
           </div>
         `).join("");
 
@@ -251,9 +546,9 @@
 
       document.getElementById("resumePreview").innerHTML = `
         <h2>${escapeHtml(r.full_name)}</h2>
-        <div style="font-size:13px; color:#334155;">${escapeHtml(r.contact_line)}</div>
+        <div class="contact">${escapeHtml(r.contact_line)}</div>
         <h3>Summary</h3>
-        <div>${escapeHtml(r.professional_summary)}</div>
+        <p style="margin:4px 0 0;">${escapeHtml(r.professional_summary)}</p>
         <h3>Technical Skills</h3>
         <ul>${r.technical_skills.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>
         <h3>Experience &amp; Training</h3>
