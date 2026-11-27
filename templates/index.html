@@ -124,16 +124,18 @@
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
     }
-    .btn-sm:hover { background: rgba(71, 85, 105, 0.85); border-color: rgba(148, 163, 184, 0.4); }
+    .btn-sm:hover:not(:disabled) { background: rgba(71, 85, 105, 0.85); border-color: rgba(148, 163, 184, 0.4); }
+    .btn-sm:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-accent-sm {
       background: rgba(37, 99, 235, 0.2);
       border-color: rgba(59, 130, 246, 0.45);
       color: #93c5fd;
     }
-    .btn-accent-sm:hover { background: rgba(37, 99, 235, 0.35); }
+    .btn-accent-sm:hover:not(:disabled) { background: rgba(37, 99, 235, 0.35); }
 
     .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
     .btn-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .upload-meta { font-size: 12px; color: #93c5fd; margin-top: 6px; min-height: 16px; }
 
     /* Loading Spinner */
     .spinner {
@@ -302,8 +304,15 @@
 
         <div class="grid-2">
           <div>
-            <label for="resume">Your Base Resume</label>
-            <textarea id="resume" placeholder="Paste your summary, skills, internships/training, projects, education, and certifications..."></textarea>
+            <div class="row-between" style="margin-bottom: 7px;">
+              <label for="resume" style="margin: 0;">Your Base Resume</label>
+              <button id="uploadBtn" class="btn-sm btn-accent-sm" type="button" onclick="document.getElementById('resumeFile').click()">
+                Upload .PDF or .DOCX
+              </button>
+              <input id="resumeFile" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" onchange="uploadResumeFile(this)" />
+            </div>
+            <textarea id="resume" placeholder="Upload a .pdf/.docx resume or paste your summary, skills, internships/training, projects, education, and certifications..."></textarea>
+            <div id="uploadStatus" class="upload-meta"></div>
           </div>
           <div>
             <label for="jd">Target Job Description</label>
@@ -393,6 +402,38 @@
     let candidateNameForFile = "Tailored_Resume";
     const resumeEl = document.getElementById("resume");
 
+    async function uploadResumeFile(inputEl) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+
+      const uploadBtn = document.getElementById("uploadBtn");
+      const uploadStatus = document.getElementById("uploadStatus");
+      uploadBtn.disabled = true;
+      uploadStatus.textContent = `Extracting text from ${file.name}...`;
+
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/extract-resume", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to extract file text");
+
+        resumeEl.value = data.text;
+        uploadStatus.textContent = `Loaded ${data.filename} — review or edit before tailoring.`;
+      } catch (err) {
+        console.error(err);
+        uploadStatus.textContent = `Upload failed: ${err.message}`;
+        alert(err.message);
+      } finally {
+        uploadBtn.disabled = false;
+        inputEl.value = "";
+      }
+    }
+
     function downloadResumePdf() {
       const originalTitle = document.title;
       document.title = candidateNameForFile;
@@ -411,7 +452,7 @@
       const status = document.getElementById("statusText");
 
       if (!base_resume || !job_description) {
-        alert("Please paste both your base resume and the job description.");
+        alert("Please upload or paste your base resume and paste the job description.");
         return;
       }
 
