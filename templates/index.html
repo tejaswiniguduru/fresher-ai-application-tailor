@@ -177,6 +177,44 @@
       transition: width 0.6s ease;
     }
 
+    /* Keyword Heatmap */
+    .heatmap-sub { font-size: 12.5px; color: var(--muted); margin: 6px 0 14px; }
+    .heatmap-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 780px) { .heatmap-cols { grid-template-columns: 1fr; } }
+    .heatmap-group-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .kw-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+    .kw-pill-matched {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      color: #6ee7b7;
+      padding: 6px 11px; border-radius: 999px;
+      font-size: 12.5px; font-weight: 600;
+    }
+    .kw-pill-missing {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fcd34d;
+      padding: 6px 11px; border-radius: 999px;
+      font-size: 12.5px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s, border-color 0.15s;
+    }
+    .kw-pill-missing:hover {
+      background: rgba(245, 158, 11, 0.22);
+      border-color: rgba(245, 158, 11, 0.6);
+      transform: translateY(-1px);
+    }
+    .kw-add-tag {
+      font-size: 10.5px; font-weight: 700;
+      background: rgba(245, 158, 11, 0.22);
+      padding: 1px 6px; border-radius: 999px;
+    }
+
     /* Lists & Diff Cards */
     ul.clean-list { margin: 12px 0 0; padding-left: 18px; }
     ul.clean-list li { margin-bottom: 8px; line-height: 1.5; font-size: 14px; color: #cbd5e1; }
@@ -345,6 +383,30 @@
         </div>
       </div>
 
+      <div id="heatmapCard" class="card no-print">
+        <div class="row-between">
+          <h3 class="section-title">JD Keyword Heatmap</h3>
+          <span id="heatmapRatio" class="badge"></span>
+        </div>
+        <div class="heatmap-sub">Green keywords appear in your tailored resume. Amber keywords from the JD are missing—click any amber pill only if you genuinely know that skill to add it to Technical Skills.</div>
+        <div class="heatmap-cols">
+          <div>
+            <div class="heatmap-group-title" style="color: #6ee7b7;">
+              <span>Matched in Resume</span>
+              <span id="matchedCount">0</span>
+            </div>
+            <div id="matchedKeywords" class="kw-wrap"></div>
+          </div>
+          <div>
+            <div class="heatmap-group-title" style="color: #fcd34d;">
+              <span>Missing from Resume</span>
+              <span id="missingCount">0</span>
+            </div>
+            <div id="missingKeywords" class="kw-wrap"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="grid-2 no-print">
         <div class="card">
           <h3 class="section-title">Key Weaknesses Fixed</h3>
@@ -400,6 +462,7 @@
   <script>
     let latestResumePlainText = "";
     let candidateNameForFile = "Tailored_Resume";
+    let currentOutputData = null;
     const resumeEl = document.getElementById("resume");
 
     async function uploadResumeFile(inputEl) {
@@ -469,6 +532,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Request failed");
+        currentOutputData = data;
         renderOutput(data);
         status.textContent = "Tailored successfully!";
         document.getElementById("results").scrollIntoView({ behavior: "smooth" });
@@ -483,41 +547,45 @@
       }
     }
 
-    function renderOutput(d) {
-      document.getElementById("results").style.display = "block";
-      const diff = d.ats_match_after - d.ats_match_before;
-      const boostHtml = diff > 0 ? `<span class="boost-pill">+${diff}% Match Boost</span>` : "";
-      document.getElementById("atsScore").innerHTML = `
-        <span class="score-before">${d.ats_match_before}%</span>
-        <span class="score-arrow">→</span>
-        <span class="score-after">${d.ats_match_after}%</span>
-        ${boostHtml}
-      `;
-      document.getElementById("atsBar").style.width = `${Math.min(100, Math.max(0, d.ats_match_after))}%`;
+    function renderHeatmap(keywords) {
+      const list = Array.isArray(keywords) ? keywords : [];
+      const matched = list.filter(k => Boolean(k.matched));
+      const missing = list.filter(k => !Boolean(k.matched));
 
-      document.getElementById("mistakesList").innerHTML =
-        d.mistakes_fixed.map(m => `<li>${escapeHtml(m)}</li>`).join("");
+      document.getElementById("matchedCount").textContent = matched.length;
+      document.getElementById("missingCount").textContent = missing.length;
+      document.getElementById("heatmapRatio").textContent =
+        list.length ? `${matched.length} / ${list.length} JD keywords matched` : "";
 
-      document.getElementById("warningsBox").innerHTML =
-        d.interview_warnings.map(w => `
-          <div class="warn-item">
-            <strong>${escapeHtml(w.missing_skill)}</strong>
-            <div style="margin-top:4px; font-size:13px; color:#fde68a;">${escapeHtml(w.honest_interview_tip)}</div>
-          </div>
-        `).join("");
+      document.getElementById("matchedKeywords").innerHTML = matched.length
+        ? matched.map(k => `<span class="kw-pill-matched">${escapeHtml(k.keyword)}</span>`).join("")
+        : `<span style="font-size:13px; color:#94a3b8;">No direct keyword matches detected yet.</span>`;
 
-      document.getElementById("changesBox").innerHTML =
-        d.changes_made.map(c => `
-          <div class="change-item">
-            <div><span class="section-chip">${escapeHtml(c.section)}</span><strong style="font-size:13.5px;">${escapeHtml(c.reason)}</strong></div>
-            <div class="diff-grid">
-              <div class="diff-before"><strong>Before:</strong> ${escapeHtml(c.before)}</div>
-              <div class="diff-after"><strong>After:</strong> ${escapeHtml(c.after)}</div>
-            </div>
-          </div>
-        `).join("");
+      document.getElementById("missingKeywords").innerHTML = missing.length
+        ? missing.map(k => `
+            <button type="button" class="kw-pill-missing" title="Add ${escapeHtml(k.keyword)} to Technical Skills" onclick="addKeywordToSkills('${escapeJsAttr(k.keyword)}')">
+              <span>${escapeHtml(k.keyword)}</span>
+              <span class="kw-add-tag">+ Add</span>
+            </button>
+          `).join("")
+        : `<span style="font-size:13px; color:#6ee7b7;">All extracted JD keywords are covered!</span>`;
+    }
 
-      const r = d.tailored_resume;
+    function addKeywordToSkills(keyword) {
+      if (!currentOutputData || !currentOutputData.tailored_resume) return;
+      const skills = currentOutputData.tailored_resume.technical_skills;
+      const exists = skills.some(s => s.toLowerCase().includes(keyword.toLowerCase()));
+      if (!exists) {
+        skills.push(`${keyword} (Added from JD — verify before interview)`);
+      }
+      currentOutputData.jd_keywords = (currentOutputData.jd_keywords || []).map(k =>
+        k.keyword.toLowerCase() === keyword.toLowerCase() ? { ...k, matched: true } : k
+      );
+      renderResumeAndPlainText(currentOutputData.tailored_resume);
+      renderHeatmap(currentOutputData.jd_keywords);
+    }
+
+    function renderResumeAndPlainText(r) {
       if (r.full_name) {
         candidateNameForFile = r.full_name.trim().replace(/\s+/g, "_") + "_Resume";
       }
@@ -556,6 +624,45 @@
         plainParts.push("\nCERTIFICATIONS & ACHIEVEMENTS\n" + certs.map(s => "- " + s).join("\n"));
       }
       latestResumePlainText = plainParts.join("\n");
+    }
+
+    function renderOutput(d) {
+      document.getElementById("results").style.display = "block";
+      const diff = d.ats_match_after - d.ats_match_before;
+      const boostHtml = diff > 0 ? `<span class="boost-pill">+${diff}% Match Boost</span>` : "";
+      document.getElementById("atsScore").innerHTML = `
+        <span class="score-before">${d.ats_match_before}%</span>
+        <span class="score-arrow">→</span>
+        <span class="score-after">${d.ats_match_after}%</span>
+        ${boostHtml}
+      `;
+      document.getElementById("atsBar").style.width = `${Math.min(100, Math.max(0, d.ats_match_after))}%`;
+
+      renderHeatmap(d.jd_keywords);
+
+      document.getElementById("mistakesList").innerHTML =
+        d.mistakes_fixed.map(m => `<li>${escapeHtml(m)}</li>`).join("");
+
+      document.getElementById("warningsBox").innerHTML =
+        d.interview_warnings.map(w => `
+          <div class="warn-item">
+            <strong>${escapeHtml(w.missing_skill)}</strong>
+            <div style="margin-top:4px; font-size:13px; color:#fde68a;">${escapeHtml(w.honest_interview_tip)}</div>
+          </div>
+        `).join("");
+
+      document.getElementById("changesBox").innerHTML =
+        d.changes_made.map(c => `
+          <div class="change-item">
+            <div><span class="section-chip">${escapeHtml(c.section)}</span><strong style="font-size:13.5px;">${escapeHtml(c.reason)}</strong></div>
+            <div class="diff-grid">
+              <div class="diff-before"><strong>Before:</strong> ${escapeHtml(c.before)}</div>
+              <div class="diff-after"><strong>After:</strong> ${escapeHtml(c.after)}</div>
+            </div>
+          </div>
+        `).join("");
+
+      renderResumeAndPlainText(d.tailored_resume);
 
       document.getElementById("emailFull").textContent =
         `Subject: ${d.cold_email_subject}\n\n${d.cold_email_body}`;
@@ -585,6 +692,12 @@
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;");
+    }
+
+    function escapeJsAttr(str) {
+      return String(str || "")
+        .replaceAll("\\", "\\\\")
+        .replaceAll("'", "\\'");
     }
   </script>
 </body>
