@@ -293,20 +293,16 @@
       <div class="card">
         <div class="row-between" style="margin-bottom: 16px;">
           <h2 class="section-title">01. Application Inputs</h2>
-          <div class="btn-group">
-            <button class="btn-sm btn-accent-sm" type="button" onclick="loadSampleDemo()">Try Sample Demo</button>
-            <button class="btn-sm" type="button" onclick="clearSavedResume()">Clear Resume</button>
-          </div>
         </div>
 
         <div style="margin-bottom: 16px;">
           <label for="company">Target Company</label>
-          <input id="company" type="text" placeholder="e.g., Apple, Razorpay, Zomato, Acme AI Labs" />
+          <input id="company" type="text" placeholder="Enter target company name..." />
         </div>
 
         <div class="grid-2">
           <div>
-            <label for="resume">Your Base Resume <span class="badge">(Auto-saved in browser)</span></label>
+            <label for="resume">Your Base Resume</label>
             <textarea id="resume" placeholder="Paste your summary, skills, internships/training, projects, education, and certifications..."></textarea>
           </div>
           <div>
@@ -395,61 +391,7 @@
   <script>
     let latestResumePlainText = "";
     let candidateNameForFile = "Tailored_Resume";
-    const STORAGE_KEY = "fresher_tailor_base_resume_v1";
-
     const resumeEl = document.getElementById("resume");
-    const savedResume = localStorage.getItem(STORAGE_KEY);
-    if (savedResume) {
-      resumeEl.value = savedResume;
-    }
-    resumeEl.addEventListener("input", () => {
-      localStorage.setItem(STORAGE_KEY, resumeEl.value);
-    });
-
-    function clearSavedResume() {
-      localStorage.removeItem(STORAGE_KEY);
-      resumeEl.value = "";
-    }
-
-    function loadSampleDemo() {
-      document.getElementById("company").value = "Acme AI Labs";
-      if (!resumeEl.value.trim()) {
-        resumeEl.value = `TEJASWINI GUDURU
-Telangana, India | tejaswiniguduru23@gmail.com | +91 8801011911 | linkedin.com/in/tejaswini-guduru
-
-PROFESSIONAL SUMMARY
-Computer Science (AI & ML) graduate with hands-on experience in Python, Machine Learning, NLP, LLMs, and Retrieval-Augmented Generation (RAG).
-
-SKILLS
-Programming: Python (NumPy, Pandas, Scikit-learn), SQL, REST APIs, FastAPI
-GenAI & NLP: LangChain, ChromaDB, Sentence Transformers, Hugging Face, RAG, Prompt Engineering
-Tools: Docker, Git, n8n, Power BI
-
-EXPERIENCE
-Software Engineer — Cloud Shift AI Solutions (April 2026 – Present)
-Develop and maintain Python-based software and data-driven AI applications to support business workflows.
-
-Automation Test Engineer — Capgemini (December 2025 – March 2026)
-Developed automated test scripts using Playwright with JavaScript/TypeScript to validate end-to-end web workflows.
-
-PROJECTS
-Enterprise RAG Knowledge Assistant: Built an end-to-end RAG pipeline using LangChain, ChromaDB, Sentence Transformers, and FastAPI.
-AI-Powered Email Classification & Automation Agent: Built an automated routing pipeline using n8n and Gmail API, reducing inbox noise by 90%.
-
-EDUCATION
-B.Tech in Computer Science (AI & ML) — Sumathi Reddy Institute of Technology for Women | July 2025 | CGPA: 8.0/10
-
-CERTIFICATIONS
-Machine Learning Specialization — DeepLearning.AI
-Generative AI with LLMs — DeepLearning.AI & AWS`;
-      }
-      document.getElementById("jd").value = `Role: Junior GenAI & Python Engineer
-Requirements:
-- Strong Python programming and FastAPI/REST API integration skills
-- Hands-on experience building RAG pipelines, embeddings, vector databases, and semantic search
-- Experience building AI agents or automated workflows using LangChain or similar frameworks
-- Familiarity with Docker, Git, and cloud platforms (AWS/GCP)`;
-    }
 
     function downloadResumePdf() {
       const originalTitle = document.title;
