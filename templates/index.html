@@ -39,10 +39,23 @@
     .copy-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; white-space: pre-wrap; font-size: 14px; }
     .badge { font-size: 12px; color: #94a3b8; margin-left: 8px; font-weight: normal; }
     #results { display: none; }
+
+    @page {
+      size: auto;
+      margin: 0;
+    }
     @media print {
-      body { background: white; color: black; padding: 0; }
+      body { background: white; color: black; padding: 0; margin: 0; }
       .no-print { display: none !important; }
-      .resume-box { border: none; padding: 0; }
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      .card { border: none; background: transparent; padding: 0; margin: 0; box-shadow: none; }
+      .resume-box {
+        border: none;
+        border-radius: 0;
+        padding: 16mm 18mm;
+        margin: 0;
+        width: 100%;
+      }
       #results { display: block !important; }
     }
   </style>
@@ -87,7 +100,7 @@
           </div>
           <div>
             <button class="btn-sm" type="button" onclick="copyResumeText(this)">Copy Resume Text</button>
-            <button class="btn-sm" type="button" onclick="window.print()">Print / Save as PDF</button>
+            <button class="btn-sm" type="button" onclick="downloadResumePdf()">Print / Save as PDF</button>
           </div>
         </div>
       </div>
@@ -113,7 +126,7 @@
           <h3 style="margin:0;">Tailored Resume Preview</h3>
           <div>
             <button class="btn-sm" type="button" onclick="copyResumeText(this)">Copy Resume</button>
-            <button class="btn-sm" type="button" onclick="window.print()">Save as PDF</button>
+            <button class="btn-sm" type="button" onclick="downloadResumePdf()">Save as PDF</button>
           </div>
         </div>
         <div id="resumePreview" class="resume-box"></div>
@@ -140,6 +153,7 @@
 
   <script>
     let latestResumePlainText = "";
+    let candidateNameForFile = "Tailored_Resume";
     const STORAGE_KEY = "fresher_tailor_base_resume_v1";
 
     const resumeEl = document.getElementById("resume");
@@ -154,6 +168,13 @@
     function clearSavedResume() {
       localStorage.removeItem(STORAGE_KEY);
       resumeEl.value = "";
+    }
+
+    function downloadResumePdf() {
+      const originalTitle = document.title;
+      document.title = candidateNameForFile;
+      window.print();
+      setTimeout(() => { document.title = originalTitle; }, 500);
     }
 
     document.getElementById("submitBtn").addEventListener("click", runTailor);
@@ -219,6 +240,10 @@
         `).join("");
 
       const r = d.tailored_resume;
+      if (r.full_name) {
+        candidateNameForFile = r.full_name.trim().replace(/\s+/g, "_") + "_Resume";
+      }
+
       const certs = Array.isArray(r.certifications) ? r.certifications : [];
       const certHtml = certs.length
         ? `<h3>Certifications &amp; Achievements</h3><ul>${certs.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>`
